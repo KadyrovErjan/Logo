@@ -73,9 +73,6 @@ class CourseEditAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseCreateSerializers
 
-class LessonCreateAPIView(generics.CreateAPIView):
-    serializer_class = LessonCreateSerializer
-
 class LessonEditAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonCreateSerializer
@@ -89,6 +86,9 @@ class CourseListAPIView(generics.ListAPIView):
         context.update({'request': self.request})
         return context
 
+class FavoriteListAPIView(generics.ListAPIView):
+    queryset = Favorite.objects.all()
+    serializer_class = FavoriteListSerializer
 
 class FavoriteCreateAPIView(generics.CreateAPIView):
     serializer_class = FavoriteSerializer
@@ -121,6 +121,13 @@ class ReviewCreateAPIView(generics.CreateAPIView):
             serializer.save(user=self.request.user)
         except IntegrityError:
             raise ValidationError("Вы уже оставили отзыв для этого курса.")
+
+class ReviewEditAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
 
 class CourseReviewListAPIView(generics.ListAPIView):
     queryset = Review.objects.all()

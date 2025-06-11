@@ -129,6 +129,11 @@ class FavoriteSerializer(serializers.ModelSerializer):
         validated_data['user'] = request.user
         return super().create(validated_data)
 
+class FavoriteListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorite
+        fields = ['id', 'user', 'course']
+
 class PurchaseCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchasedCourse

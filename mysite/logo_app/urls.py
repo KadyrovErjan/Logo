@@ -18,10 +18,11 @@ urlpatterns = [
     path('courses/<int:pk>', CourseDetailAPIView.as_view(), name='course_detail'),
     path('courses/create/<int:pk>', CourseEditAPIView.as_view(), name='course_edit'),
     path('courses/buy/', PurchaseCourseAPIView.as_view(), name='purchase-course'),
-    path('lesson/create', LessonCreateAPIView.as_view(), name='lesson-create'),
     path('lesson/create/<int:pk>', LessonEditAPIView.as_view(), name='lesson-edit'),
-    path('favorite/', FavoriteCreateAPIView.as_view(), name='favorite_create'),
+    path('favorite/create', FavoriteCreateAPIView.as_view(), name='favorite_create'),
+    path('favorite/', FavoriteListAPIView.as_view(), name='favorite_list'),
     path('favorites/remove/<int:course_id>/', FavoriteDeleteAPIView.as_view(), name='remove-favorite'),
     path('reviews/create/', ReviewCreateAPIView.as_view(), name='create-review'),
+    path('reviews/<int:pk>/', ReviewEditAPIView.as_view(), name='create-edit'),
     path('reviews/', CourseReviewListAPIView.as_view(), name='review_list'),
 ]
