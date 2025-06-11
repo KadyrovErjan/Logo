@@ -14,13 +14,13 @@ class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-
-class CustomLoginView(TokenObtainPairView):
+class CustomLoginView(generics.GenericAPIView):
     serializer_class = CustomLoginSerializer
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         try:
@@ -28,8 +28,8 @@ class CustomLoginView(TokenObtainPairView):
         except Exception:
             return Response({'detail': 'Неверные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        user = serializer.validated_data
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class LogoutView(generics.GenericAPIView):
     serializer_class = LogoutSerializer
@@ -44,7 +44,7 @@ class LogoutView(generics.GenericAPIView):
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Невалидный токен'}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserProfileListAPIView(generics.ListAPIView):
     queryset = UserProfile.objects.all()

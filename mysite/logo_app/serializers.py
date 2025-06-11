@@ -3,37 +3,59 @@ from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from datetime import timedelta
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserProfile
+        model = User
         fields = ('username', 'email', 'password')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        user = UserProfile.objects.create_user(**validated_data)
+        password = validated_data.pop('password')
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
         return user
 
+
 class CustomLoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        user = authenticate(**data)
-        if user and user.is_active:
-            return user
-        raise serializers.ValidationError('Неверные учетные данные')
+        email = data.get('email')
+        password = data.get('password')
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Пользователь с таким email не найден")
+
+        if not user.check_password(password):
+            raise serializers.ValidationError("Неверный пароль")
+
+        if not user.is_active:
+            raise serializers.ValidationError("Пользователь не активен")
+
+        self.context['user'] = user
+        return data
 
     def to_representation(self, instance):
-        refresh = RefreshToken.for_user(instance)
+        user = self.context['user']
+        refresh = RefreshToken.for_user(user)
+
         return {
             'user': {
-                'username': instance.username,
-                'email': instance.email,
+                'username': user.username,
+                'email': user.email,
             },
             'access': str(refresh.access_token),
             'refresh': str(refresh),
         }
+
 
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()

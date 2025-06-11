@@ -6,11 +6,7 @@ USER_ROLE = (
     ('Студент', 'Студент')
 )
 
-class RegisterEmail(models.Model):
-    email = models.EmailField()
 
-    def __str__(self):
-        return self.email
 
 class UserProfile(AbstractUser):
     role = models.CharField(max_length=10, choices=USER_ROLE, default='Студент')
@@ -20,6 +16,12 @@ class UserProfile(AbstractUser):
         return self.username
 
 
+
+class RegisterEmail(models.Model):
+    email = models.EmailField()
+
+    def __str__(self):
+        return self.email
 class Home(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
