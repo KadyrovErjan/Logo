@@ -7,8 +7,6 @@ USER_ROLE = (
 )
 
 class RegisterEmail(models.Model):
-    title = models.CharField(max_length=100)
-    description = models.TextField()
     email = models.EmailField()
 
     def __str__(self):
@@ -53,10 +51,22 @@ class WhyCourseHighlight(models.Model):
     whycourse = models.ForeignKey(WhyCourse, on_delete=models.CASCADE, related_name='whycourse_highlight')
     highlight_title = models.CharField(max_length=54)
     highlight_icon = models.ImageField(upload_to='highlight_icon/')
-    highlight_description = models.ImageField(upload_to='highlight_description/')
+    highlight_description = models.TextField()
+
+class TitleForCourse(models.Model):
+    title = models.CharField(max_length=30)
+    description = models.TextField()
+
+class TitleForReview(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+
+class EmailTitle(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
 
 class AboutUs(models.Model):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=300)
     title_author = models.CharField(max_length=32)
     author_image = models.ImageField(upload_to='author_image/')
     author_bio = models.TextField()
@@ -68,12 +78,17 @@ class AboutUsImage(models.Model):
     about_us = models.ForeignKey(AboutUs, on_delete=models.CASCADE, related_name='aboutus_images')
     image = models.ImageField(upload_to='aboutus_image/')
 
+class TitleCourse(models.Model):
+    title = models.CharField(max_length=300)
+    image = models.ImageField(upload_to='course_list_image/')
+    famous_course = models.CharField(max_length=100)
+    famous_course_description = models.TextField()
+
 class Category(models.Model):
     category_name = models.CharField(max_length=32)
 
     def __str__(self):
         return self.category_name
-
 
 class Course(models.Model):
     title = models.CharField(max_length=255)

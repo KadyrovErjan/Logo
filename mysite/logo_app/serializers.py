@@ -69,6 +69,30 @@ class WhyCourseSerializer(serializers.ModelSerializer):
         model = WhyCourse
         fields = ['id', 'title', 'description',  'title_of_number1', 'description_of_number1', 'title_of_number2', 'description_of_number2']
 
+class TitleForCourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TitleForCourse
+        fields = '__all__'
+
+
+class TitleForReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TitleForReview
+        fields = '__all__'
+
+
+class EmailTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmailTitle
+        fields = '__all__'
+
+
+class TitleCourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TitleCourse
+        fields = '__all__'
+
+
 class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
@@ -168,6 +192,11 @@ class ReviewListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['id', 'user', 'course', 'city', 'region', 'rating', 'comment']
+
+class EmailCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegisterEmail
+        fields = '__all__'
 
 
 

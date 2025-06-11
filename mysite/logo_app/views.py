@@ -6,6 +6,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError
 from rest_framework.exceptions import ValidationError
+from .permissions import UserEdit, CheckUserOwner, CheckUserStudent
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserProfileSerializer
@@ -56,6 +57,7 @@ class UserProfileListAPIView(generics.ListAPIView):
 class UserProfileDetailAPIView(generics.RetrieveUpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileDetailSerializer
+    permission_classes = [permissions.IsAuthenticated, UserEdit]
 
 class HomeAPIView(generics.ListAPIView):
     queryset = Home.objects.all()
@@ -65,6 +67,24 @@ class WhyCourseAPIView(generics.ListAPIView):
     queryset = WhyCourse.objects.all()
     serializer_class = WhyCourseSerializer
 
+
+class TitleForCourseAPIView(generics.ListAPIView):
+    queryset = TitleForCourse.objects.all()
+    serializer_class = TitleCourseSerializer
+
+
+class TitleForReviewAPIView(generics.ListAPIView):
+    queryset = TitleForReview.objects.all()
+    serializer_class = TitleForReviewSerializer
+
+class EmailTitleAPIView(generics.ListAPIView):
+    queryset = EmailTitle.objects.all()
+    serializer_class = EmailTitleSerializer
+
+class TitleCourseAPIView(generics.ListAPIView):
+    queryset = TitleCourse.objects.all()
+    serializer_class = TitleCourseSerializer
+
 class CourseDetailAPIView(generics.RetrieveAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseDetailSerializer
@@ -72,10 +92,12 @@ class CourseDetailAPIView(generics.RetrieveAPIView):
 class CourseEditAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseCreateSerializers
+    permission_classes = [permissions.IsAuthenticated, CheckUserOwner]
 
 class LessonEditAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonCreateSerializer
+    permission_classes = [permissions.IsAuthenticated, CheckUserOwner]
 
 class CourseListAPIView(generics.ListAPIView):
     queryset = Course.objects.all()
@@ -114,7 +136,8 @@ class PurchaseCourseAPIView(generics.CreateAPIView):
 class ReviewCreateAPIView(generics.CreateAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [CheckUserStudent, permissions.IsAuthenticated]
+
 
     def perform_create(self, serializer):
         try:
@@ -125,12 +148,14 @@ class ReviewCreateAPIView(generics.CreateAPIView):
 class ReviewEditAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
+    permission_classes = [permissions.IsAuthenticated, CheckUserStudent, UserEdit]
 
 class CourseReviewListAPIView(generics.ListAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewListSerializer
+
+class EmailCreateAPIView(generics.CreateAPIView):
+    serializer_class = EmailCreateSerializer
+
 
 

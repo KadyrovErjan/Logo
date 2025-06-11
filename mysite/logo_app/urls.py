@@ -12,17 +12,27 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='login'),
+
     path('home/', HomeAPIView.as_view(), name='home'),
     path('whycourse/', WhyCourseAPIView.as_view(), name='whycourse'),
+    path('title_for_course/', TitleForCourseAPIView.as_view(), name='title_for_course'),
+    path('titlereview/', TitleForReviewAPIView.as_view(), name='title_review'),
+    path('titlecourse/', TitleCourseAPIView.as_view(), name='title_course'),
+
     path('courses/', CourseListAPIView.as_view(), name='course_list'),
     path('courses/<int:pk>', CourseDetailAPIView.as_view(), name='course_detail'),
-    path('courses/create/<int:pk>', CourseEditAPIView.as_view(), name='course_edit'),
     path('courses/buy/', PurchaseCourseAPIView.as_view(), name='purchase-course'),
+    path('courses/create/<int:pk>', CourseEditAPIView.as_view(), name='course_edit'),
     path('lesson/create/<int:pk>', LessonEditAPIView.as_view(), name='lesson-edit'),
+
     path('favorite/create', FavoriteCreateAPIView.as_view(), name='favorite_create'),
     path('favorite/', FavoriteListAPIView.as_view(), name='favorite_list'),
     path('favorites/remove/<int:course_id>/', FavoriteDeleteAPIView.as_view(), name='remove-favorite'),
+
     path('reviews/create/', ReviewCreateAPIView.as_view(), name='create-review'),
     path('reviews/<int:pk>/', ReviewEditAPIView.as_view(), name='create-edit'),
     path('reviews/', CourseReviewListAPIView.as_view(), name='review_list'),
+
+    path('titleemail/', EmailTitleAPIView.as_view(), name='title_email'),
+    path('email/create', EmailCreateAPIView.as_view(), name='email-create'),
 ]
