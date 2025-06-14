@@ -142,6 +142,7 @@ class LessonCreateSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = '__all__'
 
+
 class CourseListSerializer(serializers.ModelSerializer):
     total_duration = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
@@ -149,14 +150,14 @@ class CourseListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ['id', 'title', 'brief_description', 'image', 'price', 'status_course', 'total_duration', 'lessons_count', 'is_favorite']
+        fields = ['id', 'title', 'brief_description', 'image', 'price', 'status_course', 'time_image', 'total_duration', 'lesson_image', 'lessons_count', 'progress_image', 'progress', 'is_favorite']
 
     def get_total_duration(self, obj):
         total = sum((lesson.video_time for lesson in obj.course_lessons.all()), timedelta())
         return str(total)
 
     def get_lessons_count(self, obj):
-        return obj.course_lessons.count()
+        return f'{obj.course_lessons.count()} уроков'
 
     def get_is_favorite(self, obj):
         user = self.context.get('request').user
@@ -203,17 +204,29 @@ class UserProfileListSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = ['id', 'username', 'avatar', 'role', 'favorites', 'purchased_courses']
 
-class ReviewSerializer(serializers.ModelSerializer):
+class CourseReviewSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Review
-        fields = ['course', 'city', 'region', 'rating', 'comment']
+        model = CourseReview
+        fields = ['id', 'course', 'city', 'region', 'rating', 'comment']
         extra_kwargs = {'user': {'read_only': True}}
 
-class ReviewListSerializer(serializers.ModelSerializer):
+class LessonReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LessonReview
+        fields = ['id', 'lesson', 'comment', 'created_date']
+        extra_kwargs = {'user': {'read_only': True}}
+
+class CourseReviewListSerializer(serializers.ModelSerializer):
     user = UserProfileSimpleSerializer()
     class Meta:
-        model = Review
+        model = CourseReview
         fields = ['id', 'user', 'course', 'city', 'region', 'rating', 'comment']
+
+class LessonReviewListSerializer(serializers.ModelSerializer):
+    user = UserProfileSimpleSerializer()
+    class Meta:
+        model = LessonReview
+        fields = ['id', 'user', 'lesson', 'comment', 'created_date']
 
 class EmailCreateSerializer(serializers.ModelSerializer):
     class Meta:

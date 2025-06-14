@@ -99,6 +99,10 @@ class Course(models.Model):
     price = models.PositiveIntegerField(default=0)
     image = models.ImageField(upload_to='course_images/')
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
+    time_image = models.ImageField(upload_to='time_image/')
+    lesson_image = models.ImageField(upload_to='lesson_image/')
+    progress_image = models.ImageField(upload_to='progress_image/')
+    progress = models.CharField(max_length=32)
     status_course = models.CharField(max_length=20, choices=[('Бесплатно', 'Бесплатно'), ('Платно', 'Платно')],
                                          default='Бесплатно')
 
@@ -118,7 +122,7 @@ class Lesson(models.Model):
     )
     status = models.CharField(max_length=20, choices=STATUS_LESSON, default='Открытый')
 
-class Review(models.Model):
+class CourseReview(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     city = models.CharField(max_length=43)
@@ -128,6 +132,15 @@ class Review(models.Model):
 
     class Meta:
         unique_together = ('user', 'course')
+
+class LessonReview(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Course, on_delete=models.CASCADE)
+    comment = models.TextField(null=True, blank=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'lesson')
 
     def __str__(self):
         return f"{self.user} - {self.course}"

@@ -89,10 +89,20 @@ class CourseDetailAPIView(generics.RetrieveAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseDetailSerializer
 
+class CourseCreateAPIView(generics.CreateAPIView):
+    serializer_class = CourseCreateSerializers
+    permission_classes = [permissions.IsAuthenticated, CheckUserOwner]
+
+
 class CourseEditAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseCreateSerializers
     permission_classes = [permissions.IsAuthenticated, CheckUserOwner]
+
+class LessonCreateAPIView(generics.CreateAPIView):
+    serializer_class = LessonCreateSerializer
+    permission_classes = [permissions.IsAuthenticated, CheckUserOwner]
+
 
 class LessonEditAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Lesson.objects.all()
@@ -114,10 +124,10 @@ class FavoriteListAPIView(generics.ListAPIView):
 
 class FavoriteCreateAPIView(generics.CreateAPIView):
     serializer_class = FavoriteSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, CheckUserStudent]
 
 class FavoriteDeleteAPIView(generics.DestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, CheckUserStudent]
 
     def delete(self, request, *args, **kwargs):
         course_id = kwargs.get('course_id')
@@ -130,13 +140,13 @@ class FavoriteDeleteAPIView(generics.DestroyAPIView):
 
 class PurchaseCourseAPIView(generics.CreateAPIView):
     serializer_class = PurchaseCourseSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, CheckUserStudent]
 
 
-class ReviewCreateAPIView(generics.CreateAPIView):
-    queryset = Review.objects.all()
-    serializer_class = ReviewSerializer
-    permission_classes = [CheckUserStudent, permissions.IsAuthenticated]
+class CourseReviewCreateAPIView(generics.CreateAPIView):
+    queryset = CourseReview.objects.all()
+    serializer_class = CourseReviewSerializer
+    permission_classes = [permissions.IsAuthenticated, CheckUserStudent]
 
 
     def perform_create(self, serializer):
@@ -145,17 +155,31 @@ class ReviewCreateAPIView(generics.CreateAPIView):
         except IntegrityError:
             raise ValidationError("Вы уже оставили отзыв для этого курса.")
 
-class ReviewEditAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Review.objects.all()
-    serializer_class = ReviewSerializer
-    permission_classes = [permissions.IsAuthenticated, CheckUserStudent, UserEdit]
-
 class CourseReviewListAPIView(generics.ListAPIView):
-    queryset = Review.objects.all()
-    serializer_class = ReviewListSerializer
+    queryset = CourseReview.objects.all()
+    serializer_class = CourseReviewListSerializer
+
+class LessonReviewCreateAPIView(generics.CreateAPIView):
+    queryset = LessonReview.objects.all()
+    serializer_class = LessonReviewSerializer
+    permission_classes = [permissions.IsAuthenticated, CheckUserStudent]
+
+
+    def perform_create(self, serializer):
+        try:
+            serializer.save(user=self.request.user)
+        except IntegrityError:
+            raise ValidationError("Вы уже оставили отзыв для этого курса.")
+
+class LessonReviewListAPIView(generics.ListAPIView):
+    queryset = LessonReview.objects.all()
+    serializer_class = LessonReviewListSerializer
 
 class EmailCreateAPIView(generics.CreateAPIView):
     serializer_class = EmailCreateSerializer
+
+# class OwnerListSerializer(generics.ListAPIView):
+#     queryset = UserProfile.objects.all()
 
 
 

@@ -22,16 +22,22 @@ urlpatterns = [
     path('courses/', CourseListAPIView.as_view(), name='course_list'),
     path('courses/<int:pk>', CourseDetailAPIView.as_view(), name='course_detail'),
     path('courses/buy/', PurchaseCourseAPIView.as_view(), name='purchase-course'),
+
+    path('courses/create/', CourseCreateAPIView.as_view(), name='course_create'),
     path('courses/create/<int:pk>', CourseEditAPIView.as_view(), name='course_edit'),
+
+    path('lesson/create/', LessonCreateAPIView.as_view(), name='lesson-create'),
     path('lesson/create/<int:pk>', LessonEditAPIView.as_view(), name='lesson-edit'),
 
     path('favorite/create', FavoriteCreateAPIView.as_view(), name='favorite_create'),
     path('favorite/', FavoriteListAPIView.as_view(), name='favorite_list'),
     path('favorites/remove/<int:course_id>/', FavoriteDeleteAPIView.as_view(), name='remove-favorite'),
 
-    path('reviews/create/', ReviewCreateAPIView.as_view(), name='create-review'),
-    path('reviews/<int:pk>/', ReviewEditAPIView.as_view(), name='create-edit'),
-    path('reviews/', CourseReviewListAPIView.as_view(), name='review_list'),
+    path('course/reviews/create/', CourseReviewCreateAPIView.as_view(), name='create-course-review'),
+    path('course/reviews/', CourseReviewListAPIView.as_view(), name='course-review-list'),
+
+    path('lesson/reviews/create/', LessonReviewCreateAPIView.as_view(), name='create-lesson-review'),
+    path('lesson/reviews/', LessonReviewListAPIView.as_view(), name='lesson-review-list'),
 
     path('titleemail/', EmailTitleAPIView.as_view(), name='title_email'),
     path('email/create', EmailCreateAPIView.as_view(), name='email-create'),
