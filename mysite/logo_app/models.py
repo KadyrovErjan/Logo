@@ -15,6 +15,29 @@ class UserProfile(AbstractUser):
     def __str__(self):
         return self.username
 
+from django.dispatch import receiver
+from django.urls import reverse
+from django_rest_passwordreset.signals import reset_password_token_created
+from django.core.mail import send_mail
+
+
+@receiver(reset_password_token_created)
+def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
+    email_plaintext_message = "{}?token={}".format(
+        reverse('password_reset:reset-password-request'),
+        reset_password_token.key
+    )
+
+    send_mail(
+        # Subject
+        "Password Reset for {title}".format(title="Some website title"),
+        # Message
+        email_plaintext_message,
+        # From email
+        "noreply@somehost.local",
+        # Recipient list
+        [reset_password_token.user.email]
+    )
 
 
 class RegisterEmail(models.Model):
@@ -93,6 +116,7 @@ class Category(models.Model):
         return self.category_name
 
 class Course(models.Model):
+    owner = models.ForeignKey(UserProfile, related_name='courses', on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     brief_description = models.TextField()
     description = models.TextField()
@@ -121,6 +145,9 @@ class Lesson(models.Model):
         ('Закрытый', 'Закрытый')
     )
     status = models.CharField(max_length=20, choices=STATUS_LESSON, default='Открытый')
+    created_date = models.DateField(auto_now_add=True)
+    views = models.PositiveIntegerField(default=0)
+
 
 class CourseReview(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)

@@ -4,6 +4,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from datetime import timedelta
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.core.mail import send_mail
 
 User = get_user_model()
 
@@ -60,10 +64,15 @@ class CustomLoginSerializer(serializers.Serializer):
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
 
+class ChangePasswordSerializer(serializers.Serializer):
+    model = UserProfile
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
 class UserProfileSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['username']
+        fields = ['username', 'avatar']
 
 class UserProfileDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -76,17 +85,18 @@ class HighlightSerializer(serializers.ModelSerializer):
         fields = ['id', 'home', 'icon', 'description']
 
 class HomeSerializers(serializers.ModelSerializer):
-    highlight = HighlightSerializer()
+    highlight = HighlightSerializer(many=True, read_only=True)
     class Meta:
         model = Home
         fields = ['id', 'title', 'description', 'image', 'highlight']
 
-class WhyCourseHighlightSerialize(serializers.ModelSerializer):
+class WhyCourseHighlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = WhyCourseHighlight
         fields = ['id', 'highlight_title', 'highlight_icon', 'highlight_description']
 
 class WhyCourseSerializer(serializers.ModelSerializer):
+    whycourse_highlight = WhyCourseHighlightSerializer(many=True, read_only=True)
     class Meta:
         model = WhyCourse
         fields = ['id', 'title', 'description',  'title_of_number1', 'description_of_number1', 'title_of_number2', 'description_of_number2']
@@ -108,6 +118,18 @@ class EmailTitleSerializer(serializers.ModelSerializer):
         model = EmailTitle
         fields = '__all__'
 
+class AboutUsImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AboutUsImage
+        fields = ['id', 'image']
+
+class AboutUsSerializer(serializers.ModelSerializer):
+    aboutus_images = AboutUsImageSerializer(many=True, read_only=True)
+    class Meta:
+        model = AboutUs
+        fields = ['id', 'title', 'title_author', 'author_image', 'author_bio', 'aboutus_images']
+
+
 
 class TitleCourseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -115,10 +137,15 @@ class TitleCourseSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class LessonSerializer(serializers.ModelSerializer):
+class LessonListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ['id', 'title', 'video', 'goal', 'video_time', 'status']
+
+class LessonDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ['id', 'title', 'video', 'goal', 'video_time', 'status', 'created_date', 'views']
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -126,22 +153,11 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'category_name']
 
 class CourseDetailSerializer(serializers.ModelSerializer):
-    course_lessons = LessonSerializer(many=True, read_only=True)
+    course_lessons = LessonListSerializer(many=True, read_only=True)
     category = CategorySerializer()
     class Meta:
          model = Course
          fields = ['id', 'category', 'title', 'description', 'course_lessons']
-
-class CourseCreateSerializers(serializers.ModelSerializer):
-    class Meta:
-        model = Course
-        fields = '__all__'
-
-class LessonCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Lesson
-        fields = '__all__'
-
 
 class CourseListSerializer(serializers.ModelSerializer):
     total_duration = serializers.SerializerMethodField()
@@ -204,6 +220,14 @@ class UserProfileListSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = ['id', 'username', 'avatar', 'role', 'favorites', 'purchased_courses']
 
+    def get_queryset(self):
+        user = self.request.user
+        # Если текущий пользователь — студент, возвращаем его профиль,
+        # иначе — пустой список
+        if user.role == 'Студент':
+            return UserProfile.objects.filter(id=user.id)
+        return UserProfile.objects.none()
+
 class CourseReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseReview
@@ -234,6 +258,80 @@ class EmailCreateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class StudentWithCategoriesSerializer(serializers.ModelSerializer):
+    categories = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserProfile
+        fields = ['id', 'username', 'avatar', 'categories']
+
+    def get_categories(self, obj):
+        owner = self.context.get('owner')
+        purchased_courses = obj.purchased_courses.filter(course__owner=owner).select_related('course__category')
+        categories = set(purchase.course.category for purchase in purchased_courses)
+        return CategorySerializer(categories, many=True).data
 
 
+# class OwnerWithStudentsSerializer(serializers.ModelSerializer):
+#     students = serializers.SerializerMethodField()
+#
+#     class Meta:
+#         model = UserProfile
+#         fields = ['id', 'username', 'avatar', 'students']
+#
+#     def get_students(self, obj):
+#         students_qs = UserProfile.objects.filter(
+#             role='Студент',
+#             purchased_courses__course__owner=obj
+#         ).distinct()
+#         return StudentWithCategoriesSerializer(
+#             students_qs,
+#             many=True,
+#             context={'owner': obj}
+#         ).data
 
+
+class OwnerWithStudentsFullSerializer(serializers.ModelSerializer):
+    students_paid = serializers.SerializerMethodField()
+    students_free = serializers.SerializerMethodField()
+    students_both = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserProfile
+        fields = ['id', 'username', 'avatar', 'students_paid', 'students_free', 'students_both']
+
+    def _get_students_by_course_status(self, obj, status):
+        return UserProfile.objects.filter(
+            role='Студент',
+            purchased_courses__course__owner=obj,
+            purchased_courses__course__status_course=status
+        ).distinct()
+
+    def get_students_paid(self, obj):
+        qs = self._get_students_by_course_status(obj, 'Платно')
+        return StudentWithCategoriesSerializer(qs, many=True, context={'owner': obj}).data
+
+    def get_students_free(self, obj):
+        qs = self._get_students_by_course_status(obj, 'Бесплатно')
+        return StudentWithCategoriesSerializer(qs, many=True, context={'owner': obj}).data
+
+    def get_students_both(self, obj):
+        paid = self._get_students_by_course_status(obj, 'Платно')
+        free = self._get_students_by_course_status(obj, 'Бесплатно')
+        both = paid & free  # пересечение QuerySet'ов
+        return StudentWithCategoriesSerializer(both, many=True, context={'owner': obj}).data
+
+class OwnerListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['id', 'username', 'avatar', 'role']
+
+class CourseCreateSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = '__all__'
+
+class LessonCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = '__all__'

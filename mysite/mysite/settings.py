@@ -13,6 +13,7 @@ from datetime import timedelta
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from decouple import config  # pip install python-decouple
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,6 +53,9 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'django_rest_passwordreset',
+
+
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -172,7 +176,7 @@ AUTHENTICATION_BACKENDS = [
  'allauth.account.auth_backends.AuthenticationBackend',]
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -196,3 +200,13 @@ CORS_ALLOW_HEADERS = [
     "authorization",
     "x-requested-with",
 ]
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'kadyrov2006@gmail.com'          # твой Gmail
+EMAIL_HOST_PASSWORD = 'ufzr vlva ozpb qmgb'  # сгенерированный пароль для приложений
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
