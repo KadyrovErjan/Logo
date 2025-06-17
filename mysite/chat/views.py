@@ -21,6 +21,6 @@ class ChatSocketInfoView(APIView):
     )
     def post(self, request):
         data = {
-            "message": "Для подключения используйте ws://127.0.0.1:8000/ws/chat/general/?token= с JSON-сообщениями"
+            "message": "Для подключения используйте /ws/chat/general/?token= с JSON-сообщениями"
         }
         return Response(data, status=status.HTTP_200_OK)
