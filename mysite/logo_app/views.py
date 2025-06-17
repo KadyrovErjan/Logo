@@ -113,7 +113,7 @@ class WhyCourseAPIView(generics.ListAPIView):
 
 class TitleForCourseAPIView(generics.ListAPIView):
     queryset = TitleForCourse.objects.all()
-    serializer_class = TitleCourseSerializer
+    serializer_class = TitleForCourseSerializer
 
 class TitleForReviewAPIView(generics.ListAPIView):
     queryset = TitleForReview.objects.all()

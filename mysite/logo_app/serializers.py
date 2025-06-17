@@ -99,7 +99,7 @@ class WhyCourseSerializer(serializers.ModelSerializer):
     whycourse_highlight = WhyCourseHighlightSerializer(many=True, read_only=True)
     class Meta:
         model = WhyCourse
-        fields = ['id', 'title', 'description',  'title_of_number1', 'description_of_number1', 'title_of_number2', 'description_of_number2']
+        fields = ['id', 'title', 'description',  'title_of_number1', 'description_of_number1', 'title_of_number2', 'description_of_number2', 'whycourse_highlight']
 
 class TitleForCourseSerializer(serializers.ModelSerializer):
     class Meta:

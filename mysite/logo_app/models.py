@@ -189,3 +189,4 @@ class PurchasedCourse(models.Model):
 
     class Meta:
         unique_together = ('user', 'course')
+
